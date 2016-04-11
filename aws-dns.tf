@@ -1,12 +1,16 @@
-# Public A record
-resource "aws_route53_record" "public-a" {
-  zone_id = "${terraform_remote_state.shared.output.r53_notes_zone_id}"
-  name = "${var.domain_prefix}"
-  type = "A"
+resource "aws_route53_zone" "notes" {
+  name = "${var.r53_notes_zone_name}"
+}
 
-  alias {
-    name = "${aws_elb.web.dns_name}"
-    zone_id = "${aws_elb.web.zone_id}"
-    evaluate_target_health = true
-  }
+resource "aws_route53_record" "notes-ns" {
+    zone_id = "${var.r53_main_zone_id}"
+    name = "${var.r53_notes_zone_name}"
+    type = "NS"
+    ttl = "30"
+    records = [
+        "${aws_route53_zone.notes.name_servers.0}",
+        "${aws_route53_zone.notes.name_servers.1}",
+        "${aws_route53_zone.notes.name_servers.2}",
+        "${aws_route53_zone.notes.name_servers.3}"
+    ]
 }
