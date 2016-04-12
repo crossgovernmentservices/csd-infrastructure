@@ -7,13 +7,16 @@ infrastructure. Currently only DNS zones are used.
 
 Requirements
 ============
+
 - `Terraform <https://www.terraform.io>`_
     + Install on OSX with:
 
       .. code:: shell
 
         $ brew install terraform
+
 - `BlackBox`_
+
 - AWS account credentials
     + Place in ``~/.aws/credentials``:
 
