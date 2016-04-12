@@ -9,22 +9,22 @@ Requirements
 ============
 
 - `Terraform <https://www.terraform.io>`_
-    + Install on OSX with:
+    Install on OSX with:
 
-      .. code:: shell
+    .. code:: shell
 
-        $ brew install terraform
+      $ brew install terraform
 
 - `BlackBox`_
 
 - AWS account credentials
-    + Place in ``~/.aws/credentials``:
+    Place in ``~/.aws/credentials``:
 
-      .. code:: ini
+    .. code:: ini
 
-         [default]
-         aws_access_key_id = ACCESS_KEY
-         aws_secret_access_key = SECRET_KEY
+       [default]
+       aws_access_key_id = ACCESS_KEY
+       aws_secret_access_key = SECRET_KEY
 
 Usage
 =====
