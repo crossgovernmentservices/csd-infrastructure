@@ -1,8 +1,9 @@
-=========================
- CSD Notes Infrastructure
-=========================
+===================
+ CSD Infrastructure
+===================
 
-Terraform templates to create and manage CSD Notes infrastructure.
+Terraform templates to create and manage non-project/product specific
+infrastructure. Currently only DNS zones are used.
 
 Requirements
 ============
@@ -22,76 +23,65 @@ Requirements
          aws_access_key_id = ACCESS_KEY
          aws_secret_access_key = SECRET_KEY
 
-Layout
-======
-
-Resources which are shared across environments such as top-level DNS entries are managed via terraform templates in the ``shared/`` directory. Terraform templates in the root level create and manage per-environment resources.
-
 Usage
 =====
 
 Variables
 ---------
 
-Variables that are not environment-specific are stored in ``terraform.tfvars`` and ``shared/terraform.tfvars``.
+Variables are stored in the GPG encrypted and `BlackBox`_-managed ``terraform.tfvars``.
 
-Secrets
--------
+Shared state
+------------
 
-Files containing secrets (currently ``terraform.tfvars`` and ``shared/terraform.tfvars``) are encrypted with GPG and managed with `BlackBox`_. Ask an admin to add your GPG key so you can decrypt.
+Terraform's remote state storage is used to store Terraform state in Amazon S3, keeping changes in sync between different users.
 
-Creating/updating Shared resources
-----------------------------------
+
+Applying changes
+----------------
 
 Decrypt secrets::
 
   $ blackbox_edit_start terraform.tfvars
 
-or::
+or to decrypt all BlackBox-managed files::
 
-  $ blackbox_decrypt_all_files
+  $ blackbox_postdeploy
+
+
+Configure remote storage::
+
+  $ terraform remote config
+      -backend=s3 -backend-config="bucket=csd-terraform" \
+      -backend-config="key=terraform.tfstate" -backend-config="region=eu-west-1"
+
+Sync local state with remote::
+
+  $ terraform remote pull
 
 To see changes to be made (if any)::
 
-  $ cd shared/
   $ terraform plan
 
-To apply changes::
+To create or update infrastructure::
 
-  $ cd shared/
   $ terraform apply
 
-Terraform will apply changes and output a zone ID for the main parent subdomain (``r53_notes_zone_id``), which is required input for an environment's terraform template.
+To delete resources::
 
-Creating/updating environment resources
----------------------------------------
-Decrypt secrets::
+  $ terraform destroy
 
-  $ blackbox_edit_start terraform.tfvars
 
-or::
+Jenkins
+-------
 
-  $ blackbox_decrypt_all_files
+``jenkins.sh`` wraps the above ``terraform`` calls, and is used by the Jenkins CI
+server to automatically apply changes.
 
-To see changes to be made (if any)::
 
-  $ export ENV=dev  # or ENV=test, ENV=production, etc.
-  $ terraform plan -state=$ENV.tfstate -var 'environment=$ENV' \
-      -var 'rds_username=$DB_USERNAME' -var 'rds_password=$DB_PASSWORD' \
-      -var 'r53_notes_zone_id=$NOTES_ZONEID'  # from output of shared template
+Usage::
 
-To apply changes::
+  ./jenkins.sh
 
-  $ export ENV=dev  # or ENV=test, ENV=production, etc.
-  $ terraform apply -state=$ENV.tfstate -var 'environment=$ENV' \
-      -var 'rds_username=$DB_USERNAME' -var 'rds_password=$DB_PASSWORD' \
-      -var 'r53_notes_zone_id=$NOTES_ZONEID'  # from output of shared template
-
-Variables above are required. Other optional variables are detailed in ``outputs.tf``.
-
-Environment state
------------------
-
-An env-specific state is specified above (``-state=$ENV.tfstate``) to keep environments separate and avoid accidentally updating the wrong environment. Terraform will generate ``.tfstate`` files on each ``plan``, ``apply`` or ``refresh`` run. These files MUST NOT be checked into source control as they will contain secrets.
 
 .. _BlackBox: https://github.com/StackExchange/blackbox
