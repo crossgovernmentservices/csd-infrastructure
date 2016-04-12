@@ -9,6 +9,7 @@ Requirements
 ============
 
 - `Terraform <https://www.terraform.io>`_
+
     Install on OSX with:
 
     .. code:: shell
@@ -18,6 +19,7 @@ Requirements
 - `BlackBox`_
 
 - AWS account credentials
+
     Place in ``~/.aws/credentials``:
 
     .. code:: ini
